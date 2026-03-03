@@ -1,0 +1,44 @@
+# requirements.txt
+# Pinned for Python 3.11, stable as of early 2026
+# Transcribed from conda environment (conda-forge / defaults channels)
+#
+# Install with:
+#   pip install -r requirements.txt
+#
+# NOTE: graphviz (the system binary) must be installed separately via your OS
+#   package manager (e.g. `apt install graphviz` or `brew install graphviz`).
+#   The `graphviz` PyPI package below is the Python interface (python-graphviz).
+
+# ── Core scientific stack ──────────────────────────────────────────────────────
+numpy==2.2.4
+pandas==2.2.3
+scipy==1.15.3
+matplotlib==3.10.1
+seaborn==0.13.2
+scikit-learn==1.6.1
+
+# ── Graph libraries ────────────────────────────────────────────────────────────
+networkx==3.6.1
+graphviz==0.21          # python-graphviz (conda name) → `graphviz` on PyPI
+
+# ── Jupyter ────────────────────────────────────────────────────────────────────
+notebook==7.5.4
+jupyterlab==4.5.5
+
+# ── Probabilistic / causal inference ──────────────────────────────────────────
+pgmpy==1.0.0
+arviz==0.23.0
+pymc==5.28.1
+
+# ── Causal graphical models ────────────────────────────────────────────────────
+# causalgraphicalmodels has not been updated since 2018 (v0.0.4).
+# It is a thin networkx wrapper and still installs/runs on Python 3.11,
+# but treat it as a legacy dependency — consider dowhy or pgmpy for new work.
+causalgraphicalmodels==0.0.4
+
+# ── I/O / Serialization ────────────────────────────────────────────────────────
+pyarrow==23.0.1
+fastparquet==2025.12.0
+
+# ── Model Interpretability ─────────────────────────────────────────────────────
+shap==0.50.0
