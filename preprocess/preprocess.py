@@ -1,4 +1,5 @@
 # %%
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -105,14 +106,19 @@ print("proposed_credit_limit code distribution:")
 print(df["proposed_credit_limit"].value_counts().sort_index().to_string())
 
 # %%
-# Step 4 — One-hot encode low-cardinality categorical columns
-# Done before split so both splits share the same column structure
-# drop_first=True avoids multicollinearity for logistic regression
-df = pd.get_dummies(df, columns=CAT_COLS, drop_first=True, dtype=int)
+# Step 4 — One-hot encode low-cardinality categorical columns + retain label-coded originals
+# Done before split so both splits share the same column structure.
+# OHE columns (drop_first=True) are used by logistic regression.
+# Label-coded originals (integer 0, 1, 2…) are retained under the original column name
+# for Bayesian/PyMC models that need discrete category indices via pm.Categorical.
+_ohe = pd.get_dummies(df[CAT_COLS], drop_first=True, dtype=int)
+for col in CAT_COLS:
+    df[col] = pd.Categorical(df[col]).codes
+df = pd.concat([df, _ohe], axis=1)
 print(f"Shape after one-hot encoding: {df.shape}")
 print(
-    "New dummy columns:",
-    [c for c in df.columns if any(c.startswith(cat) for cat in CAT_COLS)],
+    "OHE columns:",
+    [c for c in df.columns if any(c.startswith(cat + "_") for cat in CAT_COLS)],
 )
 
 # %%
@@ -174,16 +180,21 @@ print("Skew after Yeo-Johnson (train):")
 print(X_train[YEO_JOHNSON_COLS].skew().round(3).to_string())
 
 # %%
-# Step 9 — StandardScaler (fit on train)
+# Step 9 — StandardScaler (fit on train), excluding label-coded categorical columns
 # Required for logistic regression convergence, autoencoder gradient stability,
-# and well-conditioned MCMC posteriors in PyMC
+# and well-conditioned MCMC posteriors in PyMC.
+# CAT_COLS are excluded: they are discrete integer indices (0, 1, 2…), not continuous
+# measurements — scaling them would make them unusable as PyMC category indices.
+_scale_cols = [c for c in X_train.columns if c not in CAT_COLS]
 scaler = StandardScaler()
-X_train = pd.DataFrame(
-    scaler.fit_transform(X_train), columns=X_train.columns, index=X_train.index
+X_train_scaled = pd.DataFrame(
+    scaler.fit_transform(X_train[_scale_cols]), columns=_scale_cols, index=X_train.index
 )
-X_test = pd.DataFrame(
-    scaler.transform(X_test), columns=X_test.columns, index=X_test.index
+X_test_scaled = pd.DataFrame(
+    scaler.transform(X_test[_scale_cols]), columns=_scale_cols, index=X_test.index
 )
+X_train = pd.concat([X_train_scaled, X_train[CAT_COLS]], axis=1)
+X_test  = pd.concat([X_test_scaled,  X_test[CAT_COLS]],  axis=1)
 
 print("Train feature stats after scaling (first 5 cols):")
 print(X_train.iloc[:, :5].agg(["mean", "std"]).round(3).to_string())
@@ -201,5 +212,27 @@ X_test.assign(fraud_bool=y_test).to_parquet(
 print(f"Written to {PREPROCESSED_DIR}/")
 print(f"  train.parquet — {X_train.shape[0]:,} rows x {X_train.shape[1] + 1} cols")
 print(f"  test.parquet  — {X_test.shape[0]:,} rows x {X_test.shape[1] + 1} cols")
+
+# %%
+# Write features.json — machine-readable schema mapping group names and per-model feature sets.
+# Downstream models load this to select their column subset without hard-coding column names.
+#
+#   logistic_regression → numeric + OHE columns  (scaled, no bare categoricals)
+#   bayesian            → numeric + label-coded original categorical columns
+_ohe_cols     = [c for c in X_train.columns if any(c.startswith(cat + "_") for cat in CAT_COLS)]
+_numeric_cols = [c for c in X_train.columns if c not in _ohe_cols and c not in CAT_COLS]
+features = {
+    "numeric":     _numeric_cols,
+    "ohe":         _ohe_cols,
+    "categorical": list(CAT_COLS),
+    "feature_sets": {
+        "logistic_regression": _numeric_cols + _ohe_cols,
+        "bayesian":            _numeric_cols + list(CAT_COLS),
+    },
+}
+with open(PREPROCESSED_DIR / "features.json", "w") as f:
+    json.dump(features, f, indent=2)
+
+print(f"  features.json — {len(_numeric_cols)} numeric, {len(_ohe_cols)} OHE, {len(CAT_COLS)} original categorical")
 
 # %%
