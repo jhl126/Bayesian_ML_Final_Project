@@ -1,0 +1,7 @@
+.devcontainer
+.claude
+.dockerignore
+requirements-jupyter.txt
+reference
+trash
+data
