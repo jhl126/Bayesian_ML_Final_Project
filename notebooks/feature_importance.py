@@ -31,7 +31,12 @@ X = train[lr_cols]
 y = train["fraud_bool"]
 X_test = test[lr_cols]
 y_test = test["fraud_bool"]
-sample_X = X.sample(n=1000, random_state=42)
+# Stratified 50/50 sample: equal fraud and non-fraud for stable SHAP values
+# A random draw at 1.1% fraud would yield ~11 fraud rows — too few to be meaningful.
+_n = min(int((y == 1).sum()), 500)
+_fraud_idx    = y[y == 1].sample(n=_n, random_state=42).index
+_non_fraud_idx = y[y == 0].sample(n=_n, random_state=42).index
+sample_X = X.loc[_fraud_idx.union(_non_fraud_idx)]
 sample_y = y.loc[sample_X.index]
 counts = sample_y.value_counts().sort_index()
 print(f"SHAP sample class balance — 0: {counts[0]}, 1: {counts[1]} ({counts[1] / len(sample_y):.2%} fraud)")
@@ -127,13 +132,27 @@ evaluate_model(model_balanced, X_test, y_test, "Balanced LogReg")
 
 # %%
 # 7. Visualization
+_fraud_mask = sample_y.values == 1
+
+# Full-sample plots (overall feature importance across both classes)
 shap.plots.beeswarm(shap_standard, max_display=15, show=False)
-plt.title("Standard Logistic Regression")
+plt.title("Standard LogReg — All samples")
 plt.tight_layout()
 plt.show()
 
 shap.plots.beeswarm(shap_balanced, max_display=15, show=False)
-plt.title("Balanced Logistic Regression")
+plt.title("Balanced LogReg — All samples")
+plt.tight_layout()
+plt.show()
+
+# Fraud-only plots (which features consistently drive fraud predictions)
+shap.plots.beeswarm(shap_standard[_fraud_mask], max_display=15, show=False)
+plt.title("Standard LogReg — Fraud cases only")
+plt.tight_layout()
+plt.show()
+
+shap.plots.beeswarm(shap_balanced[_fraud_mask], max_display=15, show=False)
+plt.title("Balanced LogReg — Fraud cases only")
 plt.tight_layout()
 plt.show()
 
