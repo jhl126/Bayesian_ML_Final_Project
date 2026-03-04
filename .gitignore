@@ -4,4 +4,4 @@
 requirements-jupyter.txt
 reference
 trash
-data
+data*.bif
