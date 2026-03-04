@@ -1,0 +1,19 @@
+{
+  "top_features": [
+    "device_os",
+    "prev_address_months_count_is_missing",
+    "housing_status",
+    "phone_home_valid",
+    "has_other_cards",
+    "employment_status",
+    "income",
+    "keep_alive_session",
+    "name_email_similarity",
+    "credit_risk_score",
+    "payment_type",
+    "customer_age",
+    "bank_months_count_is_missing",
+    "email_is_free",
+    "current_address_months_count_is_missing"
+  ]
+}

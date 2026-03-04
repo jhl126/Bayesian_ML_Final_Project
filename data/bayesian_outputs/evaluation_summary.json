@@ -1,0 +1,168 @@
+{
+  "model_a_naive": {
+    "roc_auc": 0.5838455060954238,
+    "pr_auc": 0.013275149557505712,
+    "confusion_matrix": [
+      [
+        154318,
+        43476
+      ],
+      [
+        1762,
+        444
+      ]
+    ]
+  },
+  "model_b_semi_constrained": {
+    "roc_auc": 0.5838455060954238,
+    "pr_auc": 0.013275149557505712,
+    "confusion_matrix": [
+      [
+        154318,
+        43476
+      ],
+      [
+        1762,
+        444
+      ]
+    ]
+  },
+  "optimal_bins_bic_selected": 2,
+  "optimal_bins_override": 3,
+  "override_reason": "BIC selected 2 bins due to heavy complexity penalty; overridden to 3 for domain interpretability",
+  "n_features": 15,
+  "features_used": [
+    "device_os",
+    "prev_address_months_count_is_missing",
+    "housing_status",
+    "phone_home_valid",
+    "has_other_cards",
+    "employment_status",
+    "income",
+    "keep_alive_session",
+    "name_email_similarity",
+    "credit_risk_score",
+    "payment_type",
+    "customer_age",
+    "bank_months_count_is_missing",
+    "email_is_free",
+    "current_address_months_count_is_missing"
+  ],
+  "structure_learning_sample_size": 30000,
+  "extra_learned_edges": [
+    [
+      "device_os",
+      "keep_alive_session"
+    ],
+    [
+      "prev_address_months_count_is_missing",
+      "housing_status"
+    ],
+    [
+      "prev_address_months_count_is_missing",
+      "customer_age"
+    ],
+    [
+      "prev_address_months_count_is_missing",
+      "current_address_months_count_is_missing"
+    ],
+    [
+      "prev_address_months_count_is_missing",
+      "phone_home_valid"
+    ],
+    [
+      "prev_address_months_count_is_missing",
+      "name_email_similarity"
+    ],
+    [
+      "prev_address_months_count_is_missing",
+      "has_other_cards"
+    ],
+    [
+      "prev_address_months_count_is_missing",
+      "bank_months_count_is_missing"
+    ],
+    [
+      "housing_status",
+      "customer_age"
+    ],
+    [
+      "housing_status",
+      "credit_risk_score"
+    ],
+    [
+      "housing_status",
+      "income"
+    ],
+    [
+      "housing_status",
+      "payment_type"
+    ],
+    [
+      "housing_status",
+      "email_is_free"
+    ],
+    [
+      "phone_home_valid",
+      "has_other_cards"
+    ],
+    [
+      "has_other_cards",
+      "keep_alive_session"
+    ],
+    [
+      "has_other_cards",
+      "payment_type"
+    ],
+    [
+      "credit_risk_score",
+      "has_other_cards"
+    ],
+    [
+      "credit_risk_score",
+      "income"
+    ],
+    [
+      "credit_risk_score",
+      "employment_status"
+    ],
+    [
+      "payment_type",
+      "bank_months_count_is_missing"
+    ],
+    [
+      "payment_type",
+      "name_email_similarity"
+    ],
+    [
+      "customer_age",
+      "employment_status"
+    ],
+    [
+      "customer_age",
+      "phone_home_valid"
+    ],
+    [
+      "customer_age",
+      "device_os"
+    ],
+    [
+      "email_is_free",
+      "device_os"
+    ]
+  ],
+  "markov_blanket_identical": true,
+  "full_observation_predictions_identical": true,
+  "partial_observation": {
+    "features_observed": [
+      "device_os",
+      "housing_status",
+      "income",
+      "credit_risk_score",
+      "phone_home_valid"
+    ],
+    "predictions_identical": false,
+    "mean_abs_difference": 0.13335952258524922,
+    "max_abs_difference": 0.22000071706058427
+  }
+}
