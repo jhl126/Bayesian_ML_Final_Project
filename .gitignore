@@ -5,3 +5,5 @@ requirements-jupyter.txt
 reference
 trash
 data*.bif
+data/preprocessed
+data/raw

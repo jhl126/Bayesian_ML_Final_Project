@@ -1,3 +1,32 @@
+# %% [markdown]
+# ## Feature Importance
+#
+# ### Purpose
+# Train logistic regression models on the full preprocessed feature set and use
+# SHAP partition explainers to rank feature importance. The top-ranked features
+# inform features for downstream use by the Bayesian network models.
+#
+# ### Overview
+# With ~1.1% fraud prevalence, a naive model ignores the minority class. Two
+# class-weighting strategies are compared — **standard** (unweighted) vs.
+# **balanced** — to understand how imbalance affects both performance and the
+# stability of SHAP attributions. A stratified 50/50 sample (≤500 per class)
+# is used for SHAP so fraud-class signal isn't drowned out by the majority.
+# OHE dummy columns are aggregated back to base categorical names before
+# plotting for human-readable feature granularity.
+#
+# ### Sections
+# | # | Section | Description |
+# |---|------|-------------|
+# | 0 | Read data | Load `features.json` + train/test parquets |
+# | 1 | Setup Data | Define X/y splits and build stratified SHAP sample |
+# | 2 | Grouping Logic | Map OHE columns back to base categorical names |
+# | 3 | Build Masker | Hierarchical-clustering partition masker for SHAP |
+# | 4 | SHAP Helper | Train model, compute and aggregate SHAP values |
+# | 5 | Compare Models | Run standard and balanced variants |
+# | 6 | Evaluate Models | Confusion matrix, classification report, ROC/PR AUC, MCC |
+# | 7 | Visualization | Beeswarm plots (all samples + fraud-only) for both models |
+
 # %%
 import json
 
@@ -23,7 +52,7 @@ with open("../data/preprocessed/features.json") as f:
 lr_cols = features["feature_sets"]["logistic_regression"]
 
 train = pd.read_parquet("../data/preprocessed/train.parquet")
-test  = pd.read_parquet("../data/preprocessed/test.parquet")
+test = pd.read_parquet("../data/preprocessed/test.parquet")
 
 # %%
 # 1. Setup Data
@@ -34,12 +63,14 @@ y_test = test["fraud_bool"]
 # Stratified 50/50 sample: equal fraud and non-fraud for stable SHAP values
 # A random draw at 1.1% fraud would yield ~11 fraud rows — too few to be meaningful.
 _n = min(int((y == 1).sum()), 500)
-_fraud_idx    = y[y == 1].sample(n=_n, random_state=42).index
+_fraud_idx = y[y == 1].sample(n=_n, random_state=42).index
 _non_fraud_idx = y[y == 0].sample(n=_n, random_state=42).index
 sample_X = X.loc[_fraud_idx.union(_non_fraud_idx)]
 sample_y = y.loc[sample_X.index]
 counts = sample_y.value_counts().sort_index()
-print(f"SHAP sample class balance — 0: {counts[0]}, 1: {counts[1]} ({counts[1] / len(sample_y):.2%} fraud)")
+print(
+    f"SHAP sample class balance — 0: {counts[0]}, 1: {counts[1]} ({counts[1] / len(sample_y):.2%} fraud)"
+)
 
 
 # %%
