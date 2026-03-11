@@ -77,8 +77,6 @@ Bayesian_ML_Final_Project/
 └── README.md
 ```
 
-> **Note:** The directory structure above reflects the logical organization. Some files may be located at slightly different paths in the repository.
-
 ---
 
 ## Pipeline Overview
